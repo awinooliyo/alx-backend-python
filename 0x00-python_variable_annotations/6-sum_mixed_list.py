@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-
-from typing import List, Union
-
 """
 Module: sum_mixed_list
 
@@ -13,6 +10,7 @@ Functions:
         Computes the sum of the input mixed list of integers and floats and
         returns it as a float.
 """
+from typing import List, Union
 
 
 def sum_mixed_list(mxd_lst: List[Union[int, float]]) -> float:
