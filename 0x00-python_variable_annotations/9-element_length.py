@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
+"""
+Module: element_length
 
+Defines a function to calculate element lengths in iterables of sequences.
+"""
 from typing import Iterable, Sequence, List, Tuple
 
 
