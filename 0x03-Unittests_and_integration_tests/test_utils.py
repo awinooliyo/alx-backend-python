@@ -6,7 +6,9 @@ Module for parameterized unit test.
 
 import unittest
 from parameterized import parameterized
-from utils import access_nested_map, get_json
+from typing import Dict
+from unittest.mock import patch, Mock
+from utils import access_nested_map, get_json, memoization
 
 
 class TestAccessNestedMap(unittest.TestCase):
