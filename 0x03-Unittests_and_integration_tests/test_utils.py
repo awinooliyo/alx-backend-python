@@ -6,8 +6,7 @@ Module for parameterized unit test.
 
 import unittest
 from parameterized import parameterized
-from utils import access_nested_map
-from utils import get_json
+from utils import access_nested_map, get_json
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -47,7 +46,6 @@ class TestGetJson(unittest.TestCase):
     """
     TestCase class for the get_json function from the utils module.
     """
-
     @parameterized.expand([
         ("http://example.com", {"payload": True}),
         ("http://holberton.io", {"payload": False}),
@@ -55,21 +53,20 @@ class TestGetJson(unittest.TestCase):
     def test_get_json(self, test_url, test_payload):
         """
         Test get_json function to ensure it returns the expected result.
-
-        Args:
-            test_url (str): The URL to pass to get_json.
-            test_payload (dict): The expected JSON payload
-            returned by get_json.
         """
-        with patch('utils.requests.get') as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = test_payload
-            mock_get.return_value = mock_response
+        class Mocked(Mock):
+            """
+            Class that inherits from Mock.
+            """
+            def json(self):
+                """
+                JSON returning a payload.
+                """
+                return payload
 
-            result = get_json(test_url)
-
-            mock_get.assert_called_once_with(test_url)
-            self.assertEqual(result, test_payload)
+        with patch('requests.get') as MockClass:
+            MockClass.return_value = Mocked()
+            self.assertEqual(get_json(url), payload)
 
 
 if __name__ == "__main__":
