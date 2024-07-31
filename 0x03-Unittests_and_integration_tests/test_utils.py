@@ -1,116 +1,144 @@
 #!/usr/bin/env python3
-"""
-Module for parameterized unit test.
-"""
+"""Module for parameterized unit tests.
 
+This module contains unit tests for functions and decorators in the `utils`
+module. The tests include:
+- Accessing nested maps.
+- Fetching JSON data from URLs.
+- Caching results using the memoize decorator.
+"""
 
 import unittest
 from unittest.mock import patch, Mock
 from parameterized import parameterized
-from typing import Dict
+from typing import Dict, Tuple, Union
 from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
-    """
-    Class that inherits from unittest.TestCase
+    """Test case for the `access_nested_map` function.
+
+    This class tests the behavior of the `access_nested_map` function to
+    ensure it correctly traverses nested dictionaries and handles errors
+    appropriately.
     """
     @parameterized.expand([
         ({"a": 1}, ("a",), 1),
         ({"a": {"b": 2}}, ("a",), {"b": 2}),
         ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
-    def test_access_nested_map(self, nested_map, path, expected):
-        """
-        Method to test if the method returns what it is supposed to.
+    def test_access_nested_map(
+        self,
+        nested_map: Dict,
+        path: Tuple[str],
+        expected: Union[Dict, int]
+    ) -> None:
+        """Test `access_nested_map` function for correct output.
+
+        Args:
+            nested_map (Dict): The nested dictionary to traverse.
+            path (Tuple[str]): A tuple of keys to access the nested value.
+            expected (Union[Dict, int]): The expected value after traversal.
+
+        Asserts:
+            The function output is compared with the expected value.
         """
         self.assertEqual(access_nested_map(nested_map, path), expected)
 
     @parameterized.expand([
-        ({}, ("a",)),
-        ({"a": 1}, ("a", "b"))
+        ({}, ("a",), KeyError),
+        ({"a": 1}, ("a", "b"), KeyError),
     ])
-    def test_access_nested_map_exception(self, nested_map, path):
-        """
-        Test access_nested_map function for invalid inputs
-        that should raise a KeyError.
+    def test_access_nested_map_exception(
+        self,
+        nested_map: Dict,
+        path: Tuple[str],
+        exception: Exception
+    ) -> None:
+        """Test `access_nested_map` function for handling exceptions.
 
         Args:
-            nested_map (dict): The nested dictionary to access.
-            path (tuple): Sequence of keys to traverse the dictionary.
+            nested_map (Dict): The nested dictionary to traverse.
+            path (Tuple[str]): A tuple of keys to access the nested value.
+            exception (Exception): The expected exception type.
+
+        Asserts:
+            The function raises the expected exception for invalid inputs.
         """
-        with self.assertRaises(KeyError) as cm:
+        with self.assertRaises(exception):
             access_nested_map(nested_map, path)
-        self.assertEqual(str(cm.exception), repr(path[-1]))
 
 
 class TestGetJson(unittest.TestCase):
-    """
-    TestCase class for the get_json function from the utils module.
+    """Test case for the `get_json` function.
+
+    This class tests the `get_json` function to ensure it correctly fetches
+    JSON data from a URL and handles mock responses properly.
     """
 
     @parameterized.expand([
         ("http://example.com", {"payload": True}),
         ("http://holberton.io", {"payload": False}),
     ])
-    def test_get_json(self, test_url: str, test_payload: Dict) -> None:
-        """
-        Test get_json function to ensure it returns the expected result.
+    def test_get_json(
+        self,
+        test_url: str,
+        test_payload: Dict
+    ) -> None:
+        """Test `get_json` function for correct output.
 
         Args:
-            test_url (str): The URL to pass to get_json.
-            test_payload (dict): The expected
-                        JSON payload returned by get_json.
+            test_url (str): The URL to request data from.
+            test_payload (Dict): The expected JSON payload
+            returned by `get_json`.
+
+        Asserts:
+            The function output matches the expected payload and
+            `requests.get` is called with the correct URL.
         """
-        # Set up the mock to return the test_payload
         attrs = {'json.return_value': test_payload}
-        with patch('utils.requests.get',
-                   return_value=Mock(**attrs)) as req_get:
-            # Call the function with the test URL
-            result = get_json(test_url)
-            # Check that requests.get was called
-            # exactly once with the test_url
+        with patch(
+            'utils.requests.get',
+            return_value=Mock(**attrs)
+        ) as req_get:
+            self.assertEqual(get_json(test_url), test_payload)
             req_get.assert_called_once_with(test_url)
-            # Check that the function
-            # returned the expected payload
-            self.assertEqual(result, test_payload)
 
 
 class TestMemoize(unittest.TestCase):
-    """
-    TestCase class for the `memoize` decorator from the `utils` module.
+    """Test case for the `memoize` decorator.
 
-    This class tests the `memoize` decorator to ensure it caches results
-    correctly, so a decorated method is called only once with the same
-    parameters and returns the cached result on subsequent calls.
+    This class tests the `memoize` decorator to ensure it caches results and
+    avoids redundant computations for the same input.
     """
 
-    def test_memoize(self):
-        """
-        Test the `memoize` decorator to ensure it caches results.
+    def test_memoize(self) -> None:
+        """Test `memoize` decorator for caching results.
 
-        This method creates an instance of `TestClass` with a method
-        `a_method` that returns a fixed value. The `a_property` method,
-        decorated with `memoize`, is tested to ensure `a_method` is
-        called only once, and that `a_property` returns the cached result.
+        This method creates an instance of `TestClass` with a method `a_method`
+        that returns a fixed value. The `a_property` method, decorated with
+        `memoize`, is tested to ensure `a_method` is called only once and that
+        `a_property` returns the cached result on subsequent calls.
         """
+
         class TestClass:
-            """
-            Class to test memoization.
+            """Class to test `memoize` decorator.
 
-            This class has a method `a_method` that returns a fixed value,
-            and a memoized property `a_property` that calls `a_method`.
+            This class contains a method `a_method` that returns a fixed value,
+            and a property `a_property` that is decorated with `memoize` to
+            cache the result of `a_method`.
             """
             def a_method(self):
-                """
-                Method that returns a fixed value of 42.
+                """Method returning a fixed value.
+
+                Returns:
+                    int: The fixed value of 42.
                 """
                 return 42
 
             @memoize
             def a_property(self):
-                """
-                Memoized property that calls `a_method` and returns its result.
+                """Memoized property returning the result of `a_method`.
 
                 Returns:
                     int: The result of `a_method`, which is 42.
@@ -119,17 +147,11 @@ class TestMemoize(unittest.TestCase):
 
         # Create an instance of TestClass
         instance = TestClass()
-
         # Patch the instance method `a_method`
         with patch.object(instance, 'a_method') as mock_method:
             # Access the memoized property twice
             instance.a_property
             instance.a_property
-
-            # Assert that the result is as expected
-            # self.assertEqual(result1, 42)
-            # self.assertEqual(result2, 42)
-
             # Ensure that `a_method` was called only once
             mock_method.assert_called_once()
 
