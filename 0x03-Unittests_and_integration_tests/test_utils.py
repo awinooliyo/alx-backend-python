@@ -46,7 +46,8 @@ class TestAccessNestedMap(unittest.TestCase):
 
 class TestGetJson(unittest.TestCase):
     """
-    TestCase class for the get_json function from the utils module.
+    TestCase class for the get_json
+    function from the utils module.
     """
 
     @parameterized.expand([
@@ -59,7 +60,8 @@ class TestGetJson(unittest.TestCase):
             test_payload: Dict,
             ) -> None:
         """
-        Test get_json function to ensure it returns the expected result.
+        Test get_json function to ensure it returns
+        the expected result.
 
         Args:
             test_url (str): The URL to pass to get_json.
@@ -70,6 +72,7 @@ class TestGetJson(unittest.TestCase):
         with patch('requests.get', return_value=Mock(**attrs)) as req_get:
             self.assertEqual(get_json(test_url), test_payload)
             req_get.assert_called_once_with(test_url)
+
 
 if __name__ == "__main__":
     unittest.main()
