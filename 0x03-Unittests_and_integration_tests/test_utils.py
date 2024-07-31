@@ -46,6 +46,7 @@ class TestGetJson(unittest.TestCase):
     """
     TestCase class for the get_json function from the utils module.
     """
+
     @parameterized.expand([
         ("http://example.com", {"payload": True}),
         ("http://holberton.io", {"payload": False}),
@@ -53,20 +54,19 @@ class TestGetJson(unittest.TestCase):
     def test_get_json(self, test_url, test_payload):
         """
         Test get_json function to ensure it returns the expected result.
-        """
-        class Mocked(Mock):
-            """
-            Class that inherits from Mock.
-            """
-            def json(self):
-                """
-                JSON returning a payload.
-                """
-                return payload
 
-        with patch('requests.get') as MockClass:
-            MockClass.return_value = Mocked()
-            self.assertEqual(get_json(url), payload)
+        Args:
+            url (str): The URL to pass to get_json.
+            payload (dict): The expected JSON payload
+            returned by get_json.
+        """
+        with patch('utils.requests.get') as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = payload
+            mock_get.return_value = mock_response
+            result = get_json(url)
+            mock_get.assert_called_once_with(url)
+            self.assertEqual(result, test_load)
 
 
 if __name__ == "__main__":
